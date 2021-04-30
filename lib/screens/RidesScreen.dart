@@ -460,7 +460,7 @@ class _RidesScreenState extends State<RidesScreen> {
             child: ListBody(
               children: <Widget>[
                 Text('Do you really want to delete this worderful ride?'),
-                Text('Are you sure bro?'),
+                Text('Are you sure?'),
               ],
             ),
           ),

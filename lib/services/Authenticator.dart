@@ -3,45 +3,27 @@ import 'package:firebase_auth/firebase_auth.dart';
 class Authenticator {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  //can be print in console i guess
-  Future<UserCredential> getAnonUserSingInResult() async {
-    UserCredential result;
-    try {
-      result = await _auth.signInAnonymously();
-      //UserCredential.user type=FireBaseUser
-      return result;
-    } catch (e) {
-      result = null;
-    }
-  }
-
-  Future<User> getAnonUserData(UserCredential result) async {
-    User user;
-    try {
-      user = await result.user;
-      return user;
-    } catch (e) {
-      user = null;
-    }
-  }
-
   Future<User> getCurrentFireBaseUser() async {
     var user = _auth.currentUser;
     return user;
   }
 
   Future<String> getCurrentFireBaseUserID() async {
-    var currentUser = _auth.currentUser;
-    String currentUserId = currentUser.uid;
-    if (currentUserId == null) {
-      return 'NoUserYet';
-    } else {
-      return currentUser.uid;
+    try {
+      var currentUser = _auth.currentUser;
+      String currentUserId = currentUser.uid;
+      if (currentUserId == null) {
+        return 'NoUserYet';
+      } else {
+        return currentUser.uid;
+      }
+    } catch (e) {
+      print(e.toString());
     }
   }
 
   // Sing in with email
-  Future signInWithEmailAndPasssword(String email, String password) async {
+  Future signInWithEmailAndPassword(String email, String password) async {
     try {
       UserCredential result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
@@ -57,37 +39,58 @@ class Authenticator {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       return result;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        print('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        print('The account already exists for that email.');
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<String> getCurrentFireBaseUserEmail() async {
+    try {
+      User currentUser = _auth.currentUser;
+      String currentUserEmail = currentUser.email;
+      if (currentUserEmail == null) {
+        return 'NoUserYet';
+      } else {
+        return currentUser.email;
+      }
     } catch (e) {
       print(e.toString());
     }
   }
 
-  Future<String> getCurrentFireBaseUserPhone() async {
-    User currentUser = _auth.currentUser;
-    String currentUserPhone = currentUser.phoneNumber;
-    if (currentUserPhone == null) {
-      return 'NoUserYet';
-    } else {
-      return currentUser.phoneNumber;
-    }
-  }
-
-  Future<String> getCurrentFireBaseUserEmail() async {
-    User currentUser = _auth.currentUser;
-    String currentUserEmail = currentUser.email;
-    if (currentUserEmail == null) {
-      return 'NoUserYet';
-    } else {
-      return currentUser.email;
-    }
-  }
-
   Future<bool> isUserAuthenticated() async {
-    var currentUser = _auth.currentUser;
-    if (currentUser == null) {
-      return false;
-    } else {
-      return true;
+    try {
+      var currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        return false;
+      } else {
+        return true;
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<void> sendEmailVerification() async {
+    try {
+      var currentUser = _auth.currentUser;
+      currentUser.sendEmailVerification();
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future sendPasswordReset(String email) async {
+    try {
+      _auth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      print(e.toString());
     }
   }
 

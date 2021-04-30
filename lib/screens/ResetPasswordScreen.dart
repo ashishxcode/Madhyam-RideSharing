@@ -1,43 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/screens/LoginScreen.dart';
-import 'package:flutter_app/screens/ProfileEditScreen.dart';
-import 'package:flutter_app/services/Authenticator.dart';
 import 'package:flutter_app/services/DataBase.dart';
+import 'package:flutter_app/services/Authenticator.dart';
 import 'package:flutter_app/shared/constant.dart';
 
-class RegisterScreen extends StatefulWidget {
+import 'LoginScreen.dart';
+
+class ResetPassword extends StatefulWidget {
   final DataBase db;
-  RegisterScreen({@required this.db});
+  ResetPassword({@required this.db});
   @override
-  _RegisterScreenState createState() => _RegisterScreenState();
+  _ResetPasswordState createState() => _ResetPasswordState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
-  final Authenticator _auth = Authenticator();
-  final appPrimaryColor = const Color(0xff4CAF50);
+class _ResetPasswordState extends State<ResetPassword> {
+  static final _auth = Authenticator();
+
+  final appPrimaryColor = const Color(0xFF1DB954);
   final appAccentColor = const Color(0xff23008B);
   final _formKey = GlobalKey<FormState>();
   String email = '';
-  String password = '';
   String error = '';
-  bool isAuthenticated;
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Madhyam',
       theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
+        // scaffoldBackgroundColor: Colors.white,
+
         primaryColor: Theme.of(context).primaryColor,
         accentColor: Theme.of(context).accentColor,
         backgroundColor: Theme.of(context).backgroundColor,
+        //cardColor: lightGreyBackground,
         fontFamily: 'AppFont',
       ),
       home: Scaffold(
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 SizedBox(height: 40),
                 Container(
@@ -56,15 +57,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 SizedBox(height: 20),
                 Container(
                   width: 500,
-                  margin: EdgeInsets.symmetric(horizontal: 50),
+                  margin: EdgeInsets.symmetric(horizontal: 60),
                   child: Text(
-                    "Register",
+                    "Reset Password",
                     style: TextStyle(fontSize: 30.0),
                   ),
                 ),
                 SizedBox(height: 20),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 50.0),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 50.0,
+                  ),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -81,37 +84,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           keyboardType: TextInputType.emailAddress,
                         ),
                         SizedBox(height: 20),
-                        TextFormField(
-                          decoration: inputTextDecoration.copyWith(
-                              hintText: "Password"),
-                          validator: (val) => val.length < 6
-                              ? 'Enter a password 6+ char'
-                              : null,
-                          onChanged: (val) {
-                            setState(() => password = val);
-                          },
-                          obscureText: true,
-                        ),
-                        SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () async {
                             if (_formKey.currentState.validate()) {
-                              dynamic result = await _auth
-                                  .signUpWithEmailAndPassword(email, password);
-                              _auth.sendEmailVerification();
+                              dynamic result = _auth.sendPasswordReset(email);
+
                               if (result == null) {
                                 setState(() {
-                                  error =
-                                      'Something is wrong with email or password';
+                                  error = 'Something is wrong with email';
                                 });
                               } else {
-                                //If no problems with sing in go to profileScreen to enter data
-                                _showVerifyEmailSentDialog();
+                                _showPasswordEmailSentDialog();
                               }
                             }
                           },
                           child: Text(
-                            'REGISTER',
+                            'RESET PASSWORD',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -120,7 +108,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           style: primaryButton,
                         ),
-                        SizedBox(height: 10.0),
+                        SizedBox(
+                          height: 10.0,
+                        ),
                         Text(
                           error,
                           style: TextStyle(
@@ -134,25 +124,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 TextButton(
-                    onPressed: () async {
-                      await Future.delayed(const Duration(seconds: 1), () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LoginScreen(
-                              db: widget.db,
-                            ),
+                  onPressed: () async {
+                    await Future.delayed(const Duration(seconds: 1), () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LoginScreen(
+                            db: widget.db,
                           ),
-                        );
-                      });
-                    },
-                    child: Text(
-                      'Do you have account?',
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        color: appAccentColor,
-                      ),
-                    )),
+                        ),
+                      );
+                    });
+                  },
+                  child: Text(
+                    'Back to Login',
+                    style: TextStyle(
+                      color: appAccentColor,
+                      fontSize: 20.0,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -161,29 +152,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _showVerifyEmailSentDialog() {
+  void _showPasswordEmailSentDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         // return object of type Dialog
         return AlertDialog(
-          title: new Text("Verify your account"),
-          content:
-              new Text("Link to verify account has been sent to your email"),
+          title: new Text("Forgot your password"),
+          content: new Text(
+              "Reset password link has been sent to \n" + email + " address"),
           actions: <Widget>[
             new TextButton(
-              child: new Text("Verify"),
+              child: new Text("Okay"),
               onPressed: () async {
-                isAuthenticated = await _auth.isUserAuthenticated();
-                if (isAuthenticated) {
-                  Navigator.push(
+                await Future.delayed(const Duration(seconds: 1), () {
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          ProfileEditScreen(db: widget.db, isNewUser: true),
+                      builder: (context) => LoginScreen(
+                        db: widget.db,
+                      ),
                     ),
                   );
-                }
+                });
               },
             ),
           ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/screens/MyApp.dart';
 import 'package:flutter_app/screens/RegisterScreen.dart';
+import 'package:flutter_app/screens/ResetPasswordScreen.dart';
 import 'package:flutter_app/services/Authenticator.dart';
 import 'package:flutter_app/services/DataBase.dart';
 import 'package:flutter_app/shared/constant.dart';
@@ -10,7 +11,6 @@ class LoginScreen extends StatefulWidget {
   final DataBase db;
   LoginScreen({@required this.db});
 
-  @override
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -104,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: () async {
                             if (_formKey.currentState.validate()) {
                               dynamic result = await _auth
-                                  .signInWithEmailAndPasssword(email, password);
+                                  .signInWithEmailAndPassword(email, password);
                               if (result == null) {
                                 setState(() {
                                   error =
@@ -153,6 +153,28 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
+                          builder: (context) => ResetPassword(
+                            db: widget.db,
+                          ),
+                        ),
+                      );
+                    });
+                  },
+                  child: Text(
+                    'Forgot your Password ?',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14.0,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 5.0),
+                TextButton(
+                  onPressed: () async {
+                    await Future.delayed(const Duration(seconds: 1), () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
                           builder: (context) => RegisterScreen(
                             db: widget.db,
                           ),
@@ -161,10 +183,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     });
                   },
                   child: Text(
-                    'Create a New Account',
+                    'Create an Account',
                     style: TextStyle(
                       color: appAccentColor,
-                      fontSize: 14.0,
+                      fontSize: 20.0,
                     ),
                   ),
                 ),
